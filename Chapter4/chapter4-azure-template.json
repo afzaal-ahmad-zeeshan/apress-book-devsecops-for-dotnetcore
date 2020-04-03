@@ -1,0 +1,476 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_chapter4_iac_dotnetcore_name": {
+            "defaultValue": "chapter4-iac-dotnetcore",
+            "type": "String"
+        },
+        "sites_chapter4_iac_dockerimage_name": {
+            "defaultValue": "chapter4-iac-dockerimage",
+            "type": "String"
+        },
+        "serverfarms_ASP_Chapter4RG_ac17_name": {
+            "defaultValue": "ASP-Chapter4RG-ac17",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('serverfarms_ASP_Chapter4RG_ac17_name')]",
+            "location": "Central US",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "size": "S1",
+                "family": "S",
+                "capacity": 1
+            },
+            "kind": "linux",
+            "properties": {
+                "perSiteScaling": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('sites_chapter4_iac_dockerimage_name')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_Chapter4RG_ac17_name'))]"
+            ],
+            "kind": "app,linux,container",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_chapter4_iac_dockerimage_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_chapter4_iac_dockerimage_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_Chapter4RG_ac17_name'))]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('sites_chapter4_iac_dotnetcore_name')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_Chapter4RG_ac17_name'))]"
+            ],
+            "kind": "app,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_Chapter4RG_ac17_name'))]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dockerimage_name'), '/web')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dockerimage_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "DOCKER|afzaalahmadzeeshan/express-nodejs",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$chapter4-iac-dockerimage",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "reservedInstanceCount": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/web')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "DOTNETCORE|3.0",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$chapter4-iac-dotnetcore",
+                "scmType": "VSTSRM",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": true
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "reservedInstanceCount": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/1341579278212683')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author": "Afzaal Ahmad Zeeshan",
+                "deployer": "VSTS",
+                "message": "{\"type\":\"Deployment\",\"commitId\":\"01b1f9ce9e78e22b4bc9665e57a4440f1fd1dd86\",\"buildId\":\"134\",\"buildNumber\":\"20200117.14\",\"repoProvider\":\"TfsGit\",\"repoName\":\"Chapter4-WebsiteOps\",\"collectionUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/\",\"teamProject\":\"4d21e710-a99a-4b21-8a6c-81c078e25567\",\"buildProjectUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/4d21e710-a99a-4b21-8a6c-81c078e25567\",\"repositoryUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/Chapter4-WebsiteOps/_git/Chapter4-WebsiteOps\",\"branch\":\"master\",\"teamProjectName\":\"Chapter4-WebsiteOps\",\"slotName\":\"production\"}",
+                "start_time": "2020-01-17T16:23:32.8986965Z",
+                "end_time": "2020-01-17T16:23:32.8986965Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/1351579278389239')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author": "Afzaal Ahmad Zeeshan",
+                "deployer": "VSTS",
+                "message": "{\"type\":\"Deployment\",\"commitId\":\"01b1f9ce9e78e22b4bc9665e57a4440f1fd1dd86\",\"buildId\":\"135\",\"buildNumber\":\"20200117.15\",\"repoProvider\":\"TfsGit\",\"repoName\":\"Chapter4-WebsiteOps\",\"collectionUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/\",\"teamProject\":\"4d21e710-a99a-4b21-8a6c-81c078e25567\",\"buildProjectUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/4d21e710-a99a-4b21-8a6c-81c078e25567\",\"repositoryUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/Chapter4-WebsiteOps/_git/Chapter4-WebsiteOps\",\"branch\":\"master\",\"teamProjectName\":\"Chapter4-WebsiteOps\",\"slotName\":\"production\"}",
+                "start_time": "2020-01-17T16:26:29.5025131Z",
+                "end_time": "2020-01-17T16:26:29.5025131Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/1361579281660527')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author": "Afzaal Ahmad Zeeshan",
+                "deployer": "VSTS",
+                "message": "{\"type\":\"Deployment\",\"commitId\":\"be02f6ef81631bea2713e6c482c67b7f31732ba1\",\"buildId\":\"136\",\"buildNumber\":\"20200117.16\",\"repoProvider\":\"TfsGit\",\"repoName\":\"Chapter4-WebsiteOps\",\"collectionUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/\",\"teamProject\":\"4d21e710-a99a-4b21-8a6c-81c078e25567\",\"buildProjectUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/4d21e710-a99a-4b21-8a6c-81c078e25567\",\"repositoryUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/Chapter4-WebsiteOps/_git/Chapter4-WebsiteOps\",\"branch\":\"master\",\"teamProjectName\":\"Chapter4-WebsiteOps\",\"slotName\":\"production\"}",
+                "start_time": "2020-01-17T17:21:00.752791Z",
+                "end_time": "2020-01-17T17:21:00.752791Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/181579282331732')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author": "Afzaal Ahmad Zeeshan",
+                "deployer": "VSTS",
+                "message": "{\"type\":\"Deployment\",\"commitId\":\"f1c3cffefa12577cec994828bbb679d8440167dd\",\"buildId\":\"138\",\"releaseId\":\"18\",\"buildNumber\":\"20200117.2\",\"releaseName\":\"Release-1\",\"repoProvider\":\"TfsGit\",\"repoName\":\"Chapter4-WebsiteOps\",\"collectionUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/\",\"teamProject\":\"4d21e710-a99a-4b21-8a6c-81c078e25567\",\"buildProjectUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/4d21e710-a99a-4b21-8a6c-81c078e25567\",\"repositoryUrl\":\"\",\"branch\":\"master\",\"teamProjectName\":\"Chapter4-WebsiteOps\",\"slotName\":\"production\"}",
+                "start_time": "2020-01-17T17:32:12.1876662Z",
+                "end_time": "2020-01-17T17:32:12.1876662Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/191579287018350')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author": "Afzaal Ahmad Zeeshan",
+                "deployer": "VSTS",
+                "message": "{\"type\":\"Deployment\",\"commitId\":\"592df6bf3eabb8e5a1909e94478d708d15a259b7\",\"buildId\":\"139\",\"releaseId\":\"19\",\"buildNumber\":\"20200117.3\",\"releaseName\":\"Release-2\",\"repoProvider\":\"TfsGit\",\"repoName\":\"Chapter4-WebsiteOps\",\"collectionUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/\",\"teamProject\":\"4d21e710-a99a-4b21-8a6c-81c078e25567\",\"buildProjectUrl\":\"https://afzaalahmadzeeshan.visualstudio.com/4d21e710-a99a-4b21-8a6c-81c078e25567\",\"repositoryUrl\":\"\",\"branch\":\"master\",\"teamProjectName\":\"Chapter4-WebsiteOps\",\"slotName\":\"production\"}",
+                "start_time": "2020-01-17T18:50:18.5749667Z",
+                "end_time": "2020-01-17T18:50:18.5749667Z",
+                "active": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/2d3f017cb33541c7ae353bcfe97d5622')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "VSTS_ZIP_DEPLOY",
+                "message": "Created via a push deployment",
+                "start_time": "2020-01-17T17:32:03.0178471Z",
+                "end_time": "2020-01-17T17:32:05.8662941Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/7a986a113555454c915ae0ef3858a48d')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "VSTS_ZIP_DEPLOY",
+                "message": "Created via a push deployment",
+                "start_time": "2020-01-17T16:23:24.6208904Z",
+                "end_time": "2020-01-17T16:23:26.5907082Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/b1d17a18e1cd44b788539e484ebcd1fa')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "VSTS_ZIP_DEPLOY",
+                "message": "Created via a push deployment",
+                "start_time": "2020-01-17T16:26:20.9218377Z",
+                "end_time": "2020-01-17T16:26:22.3940994Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/b753d73c9a514951b4f54c5769695381')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "VSTS_ZIP_DEPLOY",
+                "message": "Created via a push deployment",
+                "start_time": "2020-01-17T18:50:10.2742779Z",
+                "end_time": "2020-01-17T18:50:12.4299428Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/cf361de0a8354b5fabef19742c3a8996')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "VSTS_ZIP_DEPLOY",
+                "message": "Created via a push deployment",
+                "start_time": "2020-01-17T17:20:50.8814799Z",
+                "end_time": "2020-01-17T17:20:53.0423418Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dockerimage_name'), '/', parameters('sites_chapter4_iac_dockerimage_name'), '.azurewebsites.net')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dockerimage_name'))]"
+            ],
+            "properties": {
+                "siteName": "chapter4-iac-dockerimage",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('sites_chapter4_iac_dotnetcore_name'), '/', parameters('sites_chapter4_iac_dotnetcore_name'), '.azurewebsites.net')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_chapter4_iac_dotnetcore_name'))]"
+            ],
+            "properties": {
+                "siteName": "chapter4-iac-dotnetcore",
+                "hostNameType": "Verified"
+            }
+        }
+    ]
+}
